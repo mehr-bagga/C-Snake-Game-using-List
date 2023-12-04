@@ -2,11 +2,11 @@
 #include "MacUILib.h"
 
 
-Player::Player(GameMechs* thisGMRef)
+Player::Player(GameMechs* thisGMRef, Food* food)
 {
     mainGameMechsRef = thisGMRef;
     myDir = STOP;
-
+    foodBin=food;
     // more actions to be included
     playerPos.x=1;
     playerPos.y=1;
@@ -94,6 +94,7 @@ void Player::movePlayer()
     // PPA3 Finite State Machine logic
     objPos temp, food, *temp1;
     temp1=new objPos;
+    int t=1;
     switch(myDir){
         case UP:
             playerPos.y-=1;
@@ -124,19 +125,30 @@ void Player::movePlayer()
         playerPos.x=1;
     }
     temp.setObjPos(playerPos.x,playerPos.y,playerPos.symbol);
-    mainGameMechsRef->getFoodPos(food);
-    if(temp.isPosEqual(&food)){
-        playerPosList->insertHead(temp);
-        mainGameMechsRef->generateFood(playerPosList);
+    for(int i=0;i<2;i++){
+        foodBin->getFoodPos(food,i);
+        if(temp.isPosEqual(&food)){
+            if(foodBin->getSpecial()==i+1){
+                for(int j=0;j<playerPosList->getSize()/2;j++){
+                    playerPosList->removeTail();
+                    mainGameMechsRef->incrementScore();
+                }
+            }
+            else{
+                mainGameMechsRef->incrementScore();
+            }
+            playerPosList->insertHead(temp);
+            foodBin->generateFood(playerPosList);
+            t=0;
+        }
     }
-    else if(myDir!=STOP){
+    if(myDir!=STOP && t){
         playerPosList->insertHead(temp);
         playerPosList->removeTail();
     }
-    
-
     delete temp1;
     temp1=NULL;
+    checkSelfCollision();
 }
 
 int Player::getSize(){

@@ -3,6 +3,7 @@
 #include "objPos.h"
 #include "Player.h"
 #include "GameMechs.h"
+#include "Food.h"
 
 using namespace std;
 
@@ -10,7 +11,8 @@ using namespace std;
 
 
 GameMechs *g1 = new GameMechs;
-Player *p1 = new Player(g1);
+Food *f1 = new Food(g1);
+Player *p1 = new Player(g1,f1);
 
 void Initialize(void);
 void GetInput(void);
@@ -47,7 +49,7 @@ void Initialize(void)
     MacUILib_init();
     MacUILib_clearScreen();
     p1->getPlayerPos(*temp1);
-    g1->generateFood(temp1);
+    f1->generateFood(temp1);
 
     
 }
@@ -62,12 +64,7 @@ void GetInput(void)
 
 void RunLogic(void)
 {
-    objPosArrayList *temp1;
-    temp1 = new objPosArrayList;
-    p1->getPlayerPos(*temp1);
-    if(g1->getScore()<p1->getSize()){
-        g1->incrementScore();
-    }
+    
 
     if(g1->getInput()==' '){
         g1->setExitTrue();
@@ -76,7 +73,6 @@ void RunLogic(void)
         p1->updatePlayerDir();  
     }
     p1->movePlayer();
-    p1->checkSelfCollision();
     g1->clearInput();
 
     
@@ -104,7 +100,6 @@ void DrawScreen(void)
             else{
                 temp.setObjPos(x,y,' ');
                 p1->getPlayerPos(*temp1);
-                g1->getFoodPos(*temp2);
                 t=1;
                 for (int i=0;i<p1->getSize();i++){
                     temp1->getElement(*temp3,i);
@@ -113,10 +108,15 @@ void DrawScreen(void)
                         t=0;
                     }
                 }
-                if(temp.isPosEqual(temp2) && t){
-                    MacUILib_printf("%c",temp2->getSymbol());
+                for (int i=0;i<2;i++){
+                    f1->getFoodPos(*temp2,i);
+                    if(temp.isPosEqual(temp2)){
+                        MacUILib_printf("%c",f1->getSymbol(i));
+                        t=0;
+                        break;
+                    }
                 }
-                else if(t){
+                if(t){
                     MacUILib_printf(" ");
                 }
             }
@@ -138,12 +138,15 @@ void LoopDelay(void)
 void CleanUp(void)
 {
     MacUILib_clearScreen();    
+    MacUILib_uninit();
     if(g1->getLoseFlagStatus()==1){
-        MacUILib_printf("\nLOSER");
+        MacUILib_printf("\nLOSER - Snake bit itself");
     }else
-        MacUILib_printf("\nQUITTER");
+        MacUILib_printf("\nQUITTER - :/");
+
     delete p1;
     delete g1;
-    MacUILib_uninit();
+    delete f1;
+
 
 }
