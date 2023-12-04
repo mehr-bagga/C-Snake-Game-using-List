@@ -122,7 +122,8 @@ void DrawScreen(void)
             }
         }
     } 
-    MacUILib_printf("Size: %d", g1->getScore());
+    MacUILib_printf("Score: %d", g1->getScore());
+    MacUILib_printf("\nSpecial food reduces size.");
     delete temp2;
     delete temp3;
 
